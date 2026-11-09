@@ -23,56 +23,24 @@
 */
 
 
-#if !defined(AVR) && !defined(ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
+#if !defined(ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
 #error Platform is not supported
 #endif
 
-#include <MLLExtension.h>
-
-#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO)
-  #include "CommInterface.h"
-#else
-  void Update_InputCh_if_Addr_exists(uint16_t ReceivedAddr, uint8_t Direction, uint8_t OutputPower);
-#endif
-
-class IRReceiverRC5 : public MLLExtension
+class IRReceiverRC5 : public IRReceiver
 {
-	private:
-
 	public:
 	
-	IRReceiverRC5 (uint16_t receivePin) {
-    IrReceiver.begin(receivePin, false); // Start the receiver
-	}
-	
-	void setup(MobaLedLib_C& mobaLedLib) {
+	IRReceiverRC5 (uint16_t receivePin)
+  : IRReceiver(receivePin) 
+  {
 	}
 
-	void loop(MobaLedLib_C& mobaLedLib) 
+  virtual void decode()
   {
-    decodeRC5();
-  }
-    
-  void decodeRC5()
-  {
-		if (IrReceiver.decode()) 
-		{
-#ifdef MLL_IRRECEIVE_DEBUG
-      IrReceiver.printIRResultShort(&Serial); // Print complete received data in one line
-#endif        
-			if (IrReceiver.decodedIRData.protocol==decode_type_t::RC5)
-			{
-#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO)
-        char s[20];
-        sprintf(s, "@%4i %02X %02X\n", 3001+IrReceiver.decodedIRData.command, 0, 1);
-        CommInterface::addToSendBuffer(s);			
-#else            
-  #ifdef USE_EXT_ADDR
-				Update_InputCh_if_Addr_exists(3001+IrReceiver.decodedIRData.command, 0, 1);			
-  #endif
-#endif
-			}
-      IrReceiver.resume(); // Enable receiving of the next value
-		}
+    if (IrReceiver.decodedIRData.protocol==decode_type_t::RC5)
+    {
+      doSetOutput(3000+IrReceiver.decodedIRData.command, 1);
+    }
   }	
 };
