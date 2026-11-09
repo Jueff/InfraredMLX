@@ -23,21 +23,13 @@
 */
 
 
-#if !defined(AVR) && !defined(ESP32)
+#if !defined(AVR) && !defined(ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
 #error Platform is not supported
 #endif
 
-#define EXCLUDE_EXOTIC_PROTOCOLS
-#define EXCLUDE_UNIVERSAL_PROTOCOLS
-#define DISABLE_LED_FEEDBACK_FOR_RECEIVE
-
-#define DECODE_NEC     																				// turn on only NEC decoder
-
-
-#include <IRremote.h>
 #include <MLLExtension.h>
 
-#ifdef ESP32
+#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO)
   #include "CommInterface.h"
 #else
   void Update_InputCh_if_Addr_exists(uint16_t ReceivedAddr, uint8_t Direction, uint8_t OutputPower);
@@ -47,47 +39,42 @@ class IRReceiverNEC : public MLLExtension
 {
 	private:
 
-	IRrecv* irrecv;
-	
 	public:
 	
 	IRReceiverNEC (uint16_t receivePin) {
-		irrecv = new IRrecv(receivePin, false);
+    IrReceiver.begin(receivePin, false); // Start the receiver
 	}
 	
 	void setup(MobaLedLib_C& mobaLedLib) {
-#ifdef MLL_IRRECEIVE_DEBUG
-		Serial.print("IrReceiver created on pin "); Serial.println(irparams.IRReceivePin);	
-#endif    
-		irrecv->enableIRIn();  // Start the receiver
 	}
 
 	void loop(MobaLedLib_C& mobaLedLib) 
   {
-    decode();
+    decodeNEC();
   }
   
     
-  void decode()
+  void decodeNEC()
   {
-		if (irrecv->decode()) 
+		if (IrReceiver.decode()) 
 		{
-			if (irrecv->decodedIRData.protocol==decode_type_t::NEC)
-			{
 #ifdef MLL_IRRECEIVE_DEBUG
-        irrecv->printIRResultShort(&Serial);
+      IrReceiver.printIRResultShort(&Serial); // Print complete received data in one line
 #endif        
+			if (IrReceiver.decodedIRData.protocol==decode_type_t::NEC)
+			{
 
         bool repeated = false;
-        if (irrecv->decodedIRData.flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT))
+        if (IrReceiver.decodedIRData.flags & (IRDATA_FLAGS_IS_AUTO_REPEAT | IRDATA_FLAGS_IS_REPEAT))
         {
-          int ticks = irrecv->decodedIRData.rawDataPtr->rawbuf[0]*MICROS_PER_TICK;
-          repeated = ticks<250000;    // repeat within the last 250ms
+          int ticks = IrReceiver.irparams.rawbuf[0] * MICROS_PER_TICK;
+          repeated = ticks < 250000;    // repeat within the last 250ms
         }
           
-				if (irrecv->decodedIRData.address==0xEF00)	//NEC
+				if (IrReceiver.decodedIRData.address==0xEF00)	
 				{
-					if (irrecv->decodedIRData.command==0)	// brightness down
+#if !defined(ARDUINO_RASPBERRY_PI_PICO)             // RP2040 doesn't support get/set brightness
+					if (IrReceiver.decodedIRData.command==0)	// brightness down
 					{
 						uint8_t step = repeated ? 5 : 1;			// if repeated command use bigger steps
 						uint8_t br = FastLED.getBrightness();
@@ -102,9 +89,9 @@ class IRReceiverNEC : public MLLExtension
 #ifdef MLL_IRRECEIVE_DEBUG
 						Serial.print("Brightness set to ");
 						Serial.println(FastLED.getBrightness());
-#endif            
+#endif
 					}						
-					else if (irrecv->decodedIRData.command==1)	// brightness up
+					else if (IrReceiver.decodedIRData.command==1)	// brightness up
 					{
 						uint8_t step = repeated ? 5 : 1;			// if repeated command use bigger steps
 						uint8_t br = FastLED.getBrightness();
@@ -119,23 +106,24 @@ class IRReceiverNEC : public MLLExtension
 #ifdef MLL_IRRECEIVE_DEBUG
 						Serial.print("Brightness set to ");
 						Serial.println(FastLED.getBrightness());
-#endif            
+#endif
 					}
 					else
+#endif            
 					{
-#ifdef ESP32
+#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO)
  						char s[20];
-						sprintf(s, "@%4i %02X %02X\n", 3001+irrecv->decodedIRData.command, 0, 1);
+						sprintf(s, "@%4i %02X %02X\n", 3001+IrReceiver.decodedIRData.command, 0, 1);
 						CommInterface::addToSendBuffer(s);			
 #else            
   #ifdef USE_EXT_ADDR
-						Update_InputCh_if_Addr_exists(3001+irrecv->decodedIRData.command, 0, 1);			
+						Update_InputCh_if_Addr_exists(3001+IrReceiver.decodedIRData.command, 0, 1);			
   #endif
 #endif
 					}
 				}	
 			}
-      irrecv->resume(); // Enable receiving of the next value
+      IrReceiver.resume(); // Enable receiving of the next value
 		}
   }	
 };

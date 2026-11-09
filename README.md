@@ -10,3 +10,9 @@ Questions / suggestions / praise / ...
 **Revision History:**
 
 **Ver.: 0.0.1** 18.02.2022: initial test release
+**Ver.: 0.0.2** 18.03.2022: add NEC support
+**Ver.: 0.0.3** 09.11.2026: 
+- add RC5 support
+- change IRremote library to V4.7.1 to support rp2040
+                            
+

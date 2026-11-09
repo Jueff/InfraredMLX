@@ -22,9 +22,18 @@
  -------------------------------------------------------------------------------------------------------------
 */
 
-#if !defined(AVR) && !defined(ESP32)
+#if !defined(AVR) && !defined(ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
 #error Platform is not supported
 #endif
 
-#include <IRremote.h>
+#define EXCLUDE_EXOTIC_PROTOCOLS
+#define EXCLUDE_UNIVERSAL_PROTOCOLS
+#define DISABLE_LED_FEEDBACK_FOR_RECEIVE
+#define USE_STANDARD_DECODE
+#define NO_LED_FEEDBACK_CODE
+#define DECODE_NEC
+#define DECODE_RC5
+
+#include "IRremote.hpp"
 #include <IRReceiverNEC.h>
+#include <IRReceiverRC5.h>
