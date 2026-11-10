@@ -35,12 +35,18 @@ class IRReceiverRC5 : public IRReceiver
   : IRReceiver(receivePin) 
   {
 	}
-
-  virtual void decode()
+  
+  virtual void decode(MobaLedLib_C& mobaLedLib) 
   {
     if (IrReceiver.decodedIRData.protocol==decode_type_t::RC5)
     {
       doSetOutput(3000+IrReceiver.decodedIRData.command, 1);
     }
+#ifdef MLL_IRRECEIVE_DEBUG
+    else
+    {
+      Serial.println("data skipped, expecting RC5");
+    }
+#endif
   }	
 };

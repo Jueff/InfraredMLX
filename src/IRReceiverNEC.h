@@ -35,7 +35,7 @@ class IRReceiverNEC : public IRReceiver
   : IRReceiver(receivePin) 
   {
 	}
-	
+  
 	virtual void decode(MobaLedLib_C& mobaLedLib) 
   {
     if (IrReceiver.decodedIRData.protocol==decode_type_t::NEC)
@@ -92,5 +92,11 @@ class IRReceiverNEC : public IRReceiver
         }
       }	
     }
+#ifdef MLL_IRRECEIVE_DEBUG
+    else
+    {
+      Serial.println("data skipped, expecting NEC");
+    }
+#endif
   }	
 };

@@ -33,7 +33,7 @@
 #define NO_LED_FEEDBACK_CODE
 #define DECODE_NEC
 #define DECODE_RC5
-
+  
 #include "IRremote.hpp"
 
 #include <MLLExtension.h>
@@ -47,9 +47,11 @@
 class IRReceiver : public MLLExtension
 {
 	private:
-  uint16_t receivePin;
   uint16_t lastOutputAddress;
   unsigned long lastMillis;
+
+  protected:
+  uint16_t receivePin;
 
 	public:
 	
