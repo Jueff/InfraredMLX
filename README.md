@@ -16,7 +16,6 @@ Questions / suggestions / praise / ...
 **Ver.: 1.0.0** 09.11.2026: 
 - add RC5 support
 - change IRremote library to V4.7.1 to support rp2040
+
 **Ver.: 1.1.0** 11.11.2026: 
 - allow configuration of address offset
-                            
-
