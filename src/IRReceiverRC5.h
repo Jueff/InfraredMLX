@@ -31,8 +31,13 @@ class IRReceiverRC5 : public IRReceiver
 {
 	public:
 	
+	IRReceiverRC5 (uint16_t receivePin, uint16_t address)
+  : IRReceiver(receivePin, address) 
+  {
+	}
+
 	IRReceiverRC5 (uint16_t receivePin)
-  : IRReceiver(receivePin) 
+  : IRReceiver(receivePin, 3000) 
   {
 	}
   
@@ -40,7 +45,7 @@ class IRReceiverRC5 : public IRReceiver
   {
     if (IrReceiver.decodedIRData.protocol==decode_type_t::RC5)
     {
-      doSetOutput(3000+IrReceiver.decodedIRData.command, 1);
+      doSetOutput(addressOffset+IrReceiver.decodedIRData.command, 1);
     }
 #ifdef MLL_IRRECEIVE_DEBUG
     else

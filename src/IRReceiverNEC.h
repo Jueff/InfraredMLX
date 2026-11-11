@@ -30,9 +30,14 @@
 class IRReceiverNEC : public IRReceiver
 {
 	public:
-	
+
+	IRReceiverNEC (uint16_t receivePin, uint16_t address)
+  : IRReceiver(receivePin, address) 
+  {
+	}
+    
 	IRReceiverNEC (uint16_t receivePin)
-  : IRReceiver(receivePin) 
+  : IRReceiver(receivePin, addressOffset) 
   {
 	}
   
@@ -88,7 +93,7 @@ class IRReceiverNEC : public IRReceiver
         else
 #endif            
         {
-          doSetOutput(3000+IrReceiver.decodedIRData.command, 1);
+          doSetOutput(addressOffset+IrReceiver.decodedIRData.command, 1);
         }
       }	
     }

@@ -52,13 +52,17 @@ class IRReceiver : public MLLExtension
 
   protected:
   uint16_t receivePin;
+  uint16_t addressOffset;
 
-	public:
-	
-	IRReceiver(uint16_t receivePin) {
+
+	IRReceiver(uint16_t receivePin, uint16_t addressOffset)
+  {
     this->receivePin = receivePin;
+    this->addressOffset = addressOffset;  
     lastOutputAddress = 0;
 	}
+
+	public:
 	
 	virtual void setup(MobaLedLib_C& mobaLedLib) 
   {
